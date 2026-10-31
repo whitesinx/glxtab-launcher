@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "carBluetoothName": "[CAR_BLUETOOTH_NAME]",
+  "accentColor": "#0A84FF",
+  "navigation": {
+    "preferredApp": "google_maps",
+    "home": {
+      "label": "Home",
+      "address": "[HOME_ADDRESS]"
+    },
+    "work": {
+      "label": "Work",
+      "address": "[WORK_ADDRESS]"
+    }
+  },
+  "dock": [
+    {
+      "label": "Maps",
+      "package": "com.google.android.apps.maps"
+    },
+    {
+      "label": "Spotify",
+      "package": "com.spotify.music"
+    },
+    {
+      "label": "Phone",
+      "package": "com.samsung.android.dialer"
+    },
+    {
+      "label": "Messages",
+      "package": "com.samsung.android.messaging"
+    },
+    {
+      "label": "Podcasts",
+      "package": "au.com.shiftyjelly.pocketcasts"
+    },
+    {
+      "label": "Camera",
+      "package": "com.sec.android.app.camera"
+    }
+  ],
+  "autoSwitch": {
+    "movingSpeedKmh": 8.0,
+    "stoppedDebounceSec": 5,
+    "parkAfterStoppedSec": 120,
+    "sunBasedNight": true,
+    "standbyOnPowerLoss": true
+  },
+  "notifications": {
+    "bannerSeconds": 6,
+    "maxTextChars": 80,
+    "blockedPackages": []
+  },
+  "videoPackages": [
+    "com.google.android.youtube",
+    "com.netflix.mediaclient",
+    "com.disney.disneyplus",
+    "com.amazon.avod.thirdpartyclient",
+    "tv.twitch.android.app"
+  ],
+  "profiles": {
+    "tablet": {
+      "theme": "auto",
+      "keepScreenOn": false,
+      "immersive": false
+    },
+    "drive": {
+      "theme": "auto",
+      "palette": "standard",
+      "keepScreenOn": true,
+      "immersive": true
+    },
+    "night": {
+      "theme": "dark",
+      "palette": "night",
+      "accentColor": "#FF9F0A",
+      "brightness": 0.35,
+      "keepScreenOn": true,
+      "immersive": true
+    },
+    "parked": {
+      "theme": "auto",
+      "palette": "standard",
+      "keepScreenOn": true,
+      "immersive": true
+    },
+    "standby": {
+      "theme": "dark",
+      "palette": "night",
+      "brightness": 0.02,
+      "keepScreenOn": true,
+      "immersive": true,
+      "sleepAfterSec": 120
+    }
+  },
+  "welcome": {
+    "enabled": true,
+    "logo": "honda",
+    "title": "Welcome, Habibi",
+    "durationMs": 2600
+  },
+  "obd": {
+    "enabled": false,
+    "adapterName": "OBDII"
+  }
+}

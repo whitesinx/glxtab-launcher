@@ -1,0 +1,6 @@
+# Copy to debug.properties (gitignored). Ports and pairing code change every
+# Wireless-debugging session on Android 13 — scripts/connect.sh updates them for you.
+DEVICE_IP=172.20.7.236
+PAIRING_PORT=[PAIRING_PORT]
+PAIRING_CODE=[PAIRING_CODE]
+ADB_PORT=[ADB_PORT]

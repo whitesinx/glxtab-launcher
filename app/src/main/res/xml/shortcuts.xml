@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Long-press the "Head Unit" icon in One UI Home. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="drive" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_drive" android:enabled="true">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.afdalah.headunit"
+            android:targetClass="com.afdalah.headunit.mode.DriveModeActivity">
+            <extra android:name="source" android:value="MANUAL" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="night" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_night" android:enabled="true">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.afdalah.headunit"
+            android:targetClass="com.afdalah.headunit.mode.NightModeActivity">
+            <extra android:name="source" android:value="MANUAL" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="parked" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_parked" android:enabled="true">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.afdalah.headunit"
+            android:targetClass="com.afdalah.headunit.mode.ParkedModeActivity">
+            <extra android:name="source" android:value="MANUAL" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="tablet" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_tablet" android:enabled="true">
+        <intent android:action="android.intent.action.VIEW" android:targetPackage="com.afdalah.headunit"
+            android:targetClass="com.afdalah.headunit.mode.TabletModeActivity">
+            <extra android:name="source" android:value="MANUAL" />
+        </intent>
+    </shortcut>
+</shortcuts>

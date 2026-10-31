@@ -1,0 +1,19 @@
+<resources>
+    <!-- HOME activity: starts translucent so Tablet-mode pass-through never draws a frame. -->
+    <style name="Theme.HeadUnit.Home" parent="@android:style/Theme.Translucent.NoTitleBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowSoftInputMode">adjustResize|stateAlwaysHidden</item>
+    </style>
+
+    <!-- Mode switch / deep link trampolines: never draw, finish in onCreate. -->
+    <style name="Theme.HeadUnit.Trampoline" parent="@android:style/Theme.NoDisplay">
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>

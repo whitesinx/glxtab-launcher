@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Head Unit</string>
+    <string name="mode_tablet">HU · Tablet</string>
+    <string name="mode_drive">HU · Drive</string>
+    <string name="mode_night">HU · Night Drive</string>
+    <string name="mode_parked">HU · Parked</string>
+    <string name="mode_standby">HU · Standby</string>
+    <string name="shortcut_drive">Drive</string>
+    <string name="shortcut_night">Night Drive</string>
+    <string name="shortcut_parked">Parked</string>
+    <string name="shortcut_tablet">Exit to Tablet</string>
+    <string name="notification_listener_label">Head Unit media &amp; notifications</string>
+    <string name="service_channel">Head unit active</string>
+    <string name="lock_service_description">Locks the screen when the car\'s Bluetooth disconnects. Head Unit does not read anything on your screen.</string>
+</resources>

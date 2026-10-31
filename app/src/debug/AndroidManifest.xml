@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: merged into the debug manifest, absent from release. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- ./gradlew simulateSpeed -Pkmh=50 (adb shell runs as 'shell', so this must be exported) -->
+        <receiver android:name=".debug.SimulateSpeedReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.afdalah.headunit.debug.SIMULATE_SPEED" />
+            </intent-filter>
+        </receiver>
+        <!-- Simulate the car Bluetooth: am broadcast with action SIMULATE_CAR and boolean extra "connected" -->
+        <receiver android:name=".debug.SimulateCarReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.afdalah.headunit.debug.SIMULATE_CAR" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
