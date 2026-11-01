@@ -28,6 +28,8 @@ data class UserSettings(
     /** Sidebar sun/moon toggle. Dark by default; Night Drive and Standby are always dark. */
     val darkTheme: Boolean = true,
     val recentPackages: List<String> = emptyList(),
+    /** Sidebar shortcut slots, in order. */
+    val sidebarApps: List<String> = DEFAULT_SIDEBAR_APPS,
 )
 
 /** Everything persisted, read once synchronously at process start. */
@@ -55,6 +57,7 @@ class SettingsStore(private val context: Context) {
         val accent = stringPreferencesKey("accent_override")
         val darkTheme = booleanPreferencesKey("dark_theme")
         val recents = stringPreferencesKey("recent_packages")
+        val sidebarApps = stringPreferencesKey("sidebar_apps")
     }
 
     val settings = context.dataStore.data.map { it.toSettings() }
@@ -96,6 +99,8 @@ class SettingsStore(private val context: Context) {
         it[K.recents] = (listOf(pkg) + list.filter { p -> p != pkg }).take(6).joinToString(",")
     }
 
+    suspend fun setSidebarApps(packages: List<String>) = edit { it[K.sidebarApps] = packages.joinToString(",") }
+
     private suspend fun edit(block: (MutablePreferences) -> Unit) {
         context.dataStore.edit { block(it) }
     }
@@ -107,5 +112,6 @@ class SettingsStore(private val context: Context) {
         accentOverride = this[K.accent],
         darkTheme = this[K.darkTheme] ?: true,
         recentPackages = this[K.recents]?.split(',')?.filter(String::isNotBlank) ?: emptyList(),
+        sidebarApps = this[K.sidebarApps]?.split(',')?.takeIf { it.size == DEFAULT_SIDEBAR_APPS.size } ?: DEFAULT_SIDEBAR_APPS,
     )
 }

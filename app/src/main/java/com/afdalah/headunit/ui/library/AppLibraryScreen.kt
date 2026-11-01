@@ -46,9 +46,15 @@ import com.afdalah.headunit.ui.theme.HuTheme
 
 /** Categorized app drawer. Locked while moving (no long scrolling lists, no browsing). */
 @Composable
-fun AppLibraryScreen(moving: Boolean, actions: HeadUnitActions) {
+fun AppLibraryScreen(
+    moving: Boolean,
+    actions: HeadUnitActions,
+    /** Non-null: choosing an app for this sidebar slot instead of launching. */
+    pickingSlot: Int? = null,
+    onPicked: (String) -> Unit = {},
+) {
     Column(Modifier.fillMaxSize().padding(HuDimens.gutter)) {
-        ScreenHeader("App Library") { actions.openScreen(Screen.DASHBOARD) }
+        ScreenHeader(if (pickingSlot != null) "Choose sidebar app" else "App Library") { actions.openScreen(Screen.DASHBOARD) }
         if (moving) {
             AvailableWhenParked("Browse all apps once the car is stopped.", Modifier.fillMaxSize())
             return@Column
@@ -75,7 +81,9 @@ fun AppLibraryScreen(moving: Boolean, actions: HeadUnitActions) {
         ) {
             items(shown, key = { it.packageName }) { entry ->
                 Column(
-                    Modifier.huClickable(label = "Open ${entry.label}") { actions.launchApp(entry.packageName) }.padding(8.dp),
+                    Modifier.huClickable(label = if (pickingSlot != null) "Put ${entry.label} in the sidebar" else "Open ${entry.label}") {
+                        if (pickingSlot != null) onPicked(entry.packageName) else actions.launchApp(entry.packageName)
+                    }.padding(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {

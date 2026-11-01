@@ -17,12 +17,15 @@ import com.afdalah.headunit.notifications.NotificationHub
 import com.afdalah.headunit.sensors.DrivingStateTracker
 import com.afdalah.headunit.sensors.StatusMonitor
 import com.afdalah.headunit.service.HeadUnitService
+import com.afdalah.headunit.system.AppCloser
 import com.afdalah.headunit.system.StayOnController
+import com.afdalah.headunit.weather.WeatherRepository
 import com.afdalah.headunit.system.SystemActions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -45,6 +48,7 @@ class HeadUnitApp : Application() {
     lateinit var apps: AppRepository private set
     lateinit var autoMode: AutoModeController private set
     lateinit var carSession: CarSession private set
+    lateinit var weather: WeatherRepository private set
 
     override fun onCreate() {
         super.onCreate()
@@ -61,11 +65,19 @@ class HeadUnitApp : Application() {
         apps = AppRepository(this, configRepository, scope)
         autoMode = AutoModeController(modeManager, driving, status, configRepository)
         carSession = CarSession(this)
+        weather = WeatherRepository(driving.location, scope)
 
         scope.launch {
-            modeManager.state.map { it.mode.isHeadUnit }.distinctUntilChanged().collect { active ->
+            var wasActive: Boolean? = null
+            modeManager.state.map { it.mode.isHeadUnit }.distinctUntilChanged().collectLatest { active ->
                 stayOn.apply(active)
                 if (active) HeadUnitService.start(this@HeadUnitApp) else HeadUnitService.stop(this@HeadUnitApp)
+                if (active) weather.start() else weather.stop()
+                val leaving = wasActive == true && !active
+                wasActive = active
+                // Only on an actual head unit -> Tablet switch, never at process start. Cancelled if the
+                // head unit comes straight back (collectLatest).
+                if (leaving) AppCloser.closeAll(this@HeadUnitApp)
             }
         }
         // Navigation just started in Google Maps (full screen): come back to the dashboard, where the

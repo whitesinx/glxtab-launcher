@@ -155,7 +155,7 @@ private fun NowPlayingContent(np: NowPlaying, onOpen: () -> Unit, onPrev: () -> 
 
 // ---------------------------------------------------------------- Trip bar
 
-/** Replaces the app dock: speed, battery/heat, ETA or sun, Ask Gemini, App Library, Settings. */
+/** Replaces the app dock: speed, battery, outside/tablet temperature, air quality, ETA or sun, App Library, Settings. */
 @Composable
 private fun TripBar(speedKmh: Float?, moving: Boolean, actions: HeadUnitActions) {
     val context = LocalContext.current
@@ -166,9 +166,9 @@ private fun TripBar(speedKmh: Float?, moving: Boolean, actions: HeadUnitActions)
     val c = HuTheme.colors
     GlassPanel(Modifier.fillMaxWidth().height(116.dp), shape = HuShapes.panel) {
         Row(
-            Modifier.fillMaxSize().padding(horizontal = 28.dp, vertical = 14.dp),
+            Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.Bottom,
@@ -182,16 +182,31 @@ private fun TripBar(speedKmh: Float?, moving: Boolean, actions: HeadUnitActions)
             }
             BarDivider()
             val b = status.battery
-            if (b.overheating) {
-                BarStat(R.drawable.ic_thermometer, "${b.tempC.roundToInt()}°C", "Tablet is hot", tint = c.orange)
-            } else {
-                BarStat(
-                    if (b.plugged) R.drawable.ic_battery_charging else R.drawable.ic_battery_medium,
-                    "${b.level}%",
-                    if (b.plugged) "Charging" else "Battery",
-                    tint = if (b.plugged) c.green else c.labelPrimary,
-                )
-            }
+            BarStat(
+                if (b.plugged) R.drawable.ic_battery_charging else R.drawable.ic_battery_medium,
+                "${b.level}%",
+                if (b.plugged) "Charging" else "Battery",
+                tint = if (b.plugged) c.green else c.labelPrimary,
+            )
+            BarDivider()
+            val outside by app.weather.outsideC.collectAsStateWithLifecycle()
+            BarStat(R.drawable.ic_sun_thermometer, outside?.let { "${it.roundToInt()}°C" } ?: "—", "Outside")
+            BarDivider()
+            BarStat(
+                R.drawable.ic_thermometer,
+                "${b.tempC.roundToInt()}°C",
+                if (b.overheating) "Tablet is hot" else "Tablet",
+                tint = if (b.overheating) c.orange else c.labelPrimary,
+            )
+            BarDivider()
+            val aqi by app.weather.aqi.collectAsStateWithLifecycle()
+            val air = aqi?.let(::aqiLevel)
+            BarStat(
+                R.drawable.ic_wind,
+                aqi?.toString() ?: "—",
+                air?.let { "AQI · ${it.first}" } ?: "Air quality",
+                tint = when (air?.second) { 0 -> c.green; 1 -> c.labelPrimary; 2 -> c.orange; null -> c.labelPrimary; else -> c.red },
+            )
             BarDivider()
             val g = guidance
             if (g != null && g.eta.isNotBlank()) {
@@ -211,21 +226,6 @@ private fun TripBar(speedKmh: Float?, moving: Boolean, actions: HeadUnitActions)
                 BarStat(R.drawable.ic_gauge, "—", "RPM (phase 2)")
             }
             if (g == null || g.eta.isBlank()) Spacer(Modifier.weight(1f))
-            Row(
-                Modifier
-                    .height(84.dp)
-                    .clip(HuShapes.pill)
-                    .background(c.accent)
-                    .huClickable(label = "Ask Gemini") {
-                        if (!SystemActions.voiceAssistant(context)) actions.showHint("Gemini isn't installed")
-                    }
-                    .padding(horizontal = 28.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                HuIcon(R.drawable.ic_sparkles, null, size = HuDimens.iconMedium, tint = c.onAccent)
-                HuText("Ask Gemini", HuTheme.type.headline, color = c.onAccent, maxLines = 1)
-            }
             // Always present (locked while moving) so targets never shift position.
             CircleButton(
                 if (moving) R.drawable.ic_lock else R.drawable.ic_layout_grid, "App Library", size = 84.dp,
@@ -242,7 +242,7 @@ private fun BarStat(icon: Int, value: String, label: String, modifier: Modifier 
     Row(
         modifier.semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         HuIcon(icon, null, size = HuDimens.iconMedium, tint = tint)
         Column {
@@ -250,6 +250,16 @@ private fun BarStat(icon: Int, value: String, label: String, modifier: Modifier 
             HuText(label, HuTheme.type.caption, color = HuTheme.colors.labelSecondary, maxLines = 1)
         }
     }
+}
+
+/** US AQI band: short label and severity (0 good, 1 moderate, 2 sensitive groups, 3+ unhealthy). */
+private fun aqiLevel(aqi: Int): Pair<String, Int> = when {
+    aqi <= 50 -> "Good" to 0
+    aqi <= 100 -> "Moderate" to 1
+    aqi <= 150 -> "Sensitive" to 2
+    aqi <= 200 -> "Unhealthy" to 3
+    aqi <= 300 -> "Very unhealthy" to 4
+    else -> "Hazardous" to 5
 }
 
 @Composable

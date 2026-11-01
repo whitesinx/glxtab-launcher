@@ -27,6 +27,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import com.afdalah.headunit.system.LockScreenService
+import com.afdalah.headunit.system.SystemActions
+import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.afdalah.headunit.app
 import com.afdalah.headunit.debug.DebugHooks
@@ -60,6 +66,10 @@ class HeadUnitActions(
     val showHint: (String) -> Unit,
     val openModeMenu: () -> Unit,
     val toggleDebug: () -> Unit,
+    /** Long-press on a sidebar shortcut: pick another app for that slot from the App Library. */
+    val pickSidebarApp: (slot: Int) -> Unit,
+    /** Sidebar Home: dashboard, and hides a video window opened beside the sidebar. */
+    val goHome: () -> Unit,
 )
 
 @Composable
@@ -86,9 +96,14 @@ fun HeadUnitRoot(
     var menuOpen by remember { mutableStateOf(false) }
     var debugVisible by remember { mutableStateOf(false) }
     var hint by remember { mutableStateOf<String?>(null) }
+    var pickSlot by rememberSaveable { mutableStateOf<Int?>(null) }
+    // Screen px of the area beside the sidebar; video apps open as a window exactly over it.
+    val contentBounds = remember { arrayOfNulls<Rect>(1) }
+    val view = LocalView.current
+    val videoWindowOpen = remember { booleanArrayOf(false) }
 
     // HOME pressed while already in the head unit -> back to the dashboard.
-    LaunchedEffect(homeSignal) { screen = Screen.DASHBOARD; menuOpen = false }
+    LaunchedEffect(homeSignal) { screen = Screen.DASHBOARD; menuOpen = false; pickSlot = null }
 
     // A greeting that can't be shown now (moving, or turned off) is dropped, not deferred.
     LaunchedEffect(welcomePending, moving, config.welcome.enabled) {
@@ -97,7 +112,8 @@ fun HeadUnitRoot(
 
     // Distraction rule: no keyboard while moving.
     val keyboard = LocalSoftwareKeyboardController.current
-    LaunchedEffect(moving) { if (moving) { keyboard?.hide(); menuOpen = false } }
+    LaunchedEffect(moving) { if (moving) { keyboard?.hide(); menuOpen = false; pickSlot = null } }
+    LaunchedEffect(screen) { if (screen != Screen.LIBRARY) pickSlot = null }
 
     // Always consume BACK: on the dashboard it must not finish the HOME activity.
     BackHandler(enabled = mode.isHeadUnit) {
@@ -112,6 +128,10 @@ fun HeadUnitRoot(
             launchApp = { pkg ->
                 if (app.driving.state.value.isMoving && app.apps.isVideo(pkg)) {
                     hint = "Video apps are available when parked"
+                } else if (app.apps.isVideo(pkg) && contentBounds[0]?.let { SystemActions.openInBounds(context, pkg, it) } == true) {
+                    // Like karaoke: the video fills the area beside the sidebar, which stays usable.
+                    videoWindowOpen[0] = true
+                    app.modeManager.pushRecent(pkg)
                 } else if (app.apps.launch(pkg)) {
                     app.modeManager.pushRecent(pkg)
                 } else {
@@ -123,6 +143,19 @@ fun HeadUnitRoot(
                 if (app.driving.state.value.isMoving) hint = "Mode menu is available when parked" else menuOpen = true
             },
             toggleDebug = { if (DebugHooks.ENABLED) debugVisible = !debugVisible },
+            goHome = {
+                screen = Screen.DASHBOARD
+                // Our own activity can't come in front of a pop-up window; a system HOME minimizes it.
+                if (videoWindowOpen[0] && LockScreenService.home()) videoWindowOpen[0] = false
+            },
+            pickSidebarApp = { slot ->
+                if (app.driving.state.value.isMoving) {
+                    hint = "Change shortcuts when parked"
+                } else {
+                    pickSlot = slot
+                    screen = Screen.LIBRARY
+                }
+            },
         )
     }
 
@@ -153,7 +186,14 @@ fun HeadUnitRoot(
                     val snapScreens = HuTheme.reduceMotion || moving
                     AnimatedContent(
                         targetState = screen,
-                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        modifier = Modifier.weight(1f).fillMaxHeight().onGloballyPositioned { coords ->
+                            val r = coords.boundsInWindow()
+                            val origin = IntArray(2).also { view.getLocationOnScreen(it) }
+                            contentBounds[0] = Rect(
+                                origin[0] + r.left.roundToInt(), origin[1] + r.top.roundToInt(),
+                                origin[0] + r.right.roundToInt(), origin[1] + r.bottom.roundToInt(),
+                            ).takeIf { it.width() > 0 }
+                        },
                         transitionSpec = {
                             fadeIn(HuMotion.fade(snapScreens)) togetherWith fadeOut(HuMotion.fade(snapScreens))
                         },
@@ -161,7 +201,16 @@ fun HeadUnitRoot(
                     ) { s ->
                         when (s) {
                             Screen.DASHBOARD -> Dashboard(moving = moving, speedKmh = driving.speedKmh, actions = actions)
-                            Screen.LIBRARY -> AppLibraryScreen(moving = moving, actions = actions)
+                            Screen.LIBRARY -> AppLibraryScreen(
+                                moving = moving,
+                                actions = actions,
+                                pickingSlot = pickSlot,
+                                onPicked = { pkg ->
+                                    pickSlot?.let { app.modeManager.setSidebarApp(it, pkg) }
+                                    pickSlot = null
+                                    screen = Screen.DASHBOARD
+                                },
+                            )
                             Screen.SETTINGS -> SettingsScreen(moving = moving, actions = actions)
                             Screen.KARAOKE -> KaraokeScreen(actions = actions)
                         }

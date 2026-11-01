@@ -62,7 +62,6 @@ fun Sidebar(mode: Mode, moving: Boolean, speedKmh: Float?, actions: HeadUnitActi
     val c = HuTheme.colors
     val status by app.status.state.collectAsStateWithLifecycle()
     val settings by app.modeManager.settings.collectAsStateWithLifecycle()
-    val config by app.configRepository.config.collectAsStateWithLifecycle()
 
     Column(
         modifier
@@ -112,20 +111,25 @@ fun Sidebar(mode: Mode, moving: Boolean, speedKmh: Float?, actions: HeadUnitActi
             )
         }
 
-        // Quick app switcher: recently used dock apps, as many as fit.
-        val installed = config.dock.map { it.packageName }.filter { app.apps.isInstalled(it) }
-        val recents = (settings.recentPackages.filter { app.apps.isInstalled(it) } + installed).distinct()
+        // Pinned shortcuts (Netflix, YouTube, Spotify by default), as many as fit. Long-press to change one.
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            val count = ((maxHeight.value + 14) / (HuDimens.minTarget.value + 14)).toInt().coerceIn(0, 3)
+            val count = ((maxHeight.value + 14) / (HuDimens.minTarget.value + 14)).toInt().coerceIn(0, settings.sidebarApps.size)
             Column(verticalArrangement = Arrangement.spacedBy(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                recents.take(count).forEach { pkg ->
-                    AppIcon(
-                        pkg,
-                        size = HuDimens.minTarget,
-                        modifier = Modifier
-                            .huClickable(label = "Open ${appLabel(context, pkg)}") { actions.launchApp(pkg) }
-                            .semantics { contentDescription = appLabel(context, pkg) },
-                    )
+                settings.sidebarApps.take(count).forEachIndexed { slot, pkg ->
+                    if (app.apps.isInstalled(pkg)) {
+                        val label = appLabel(context, pkg)
+                        AppIcon(
+                            pkg,
+                            size = HuDimens.minTarget,
+                            modifier = Modifier
+                                .huClickable(label = "Open $label", onLongClick = { actions.pickSidebarApp(slot) }) { actions.launchApp(pkg) }
+                                .semantics { contentDescription = label },
+                        )
+                    } else {
+                        CircleButton(R.drawable.ic_layout_grid, "Empty shortcut. Choose an app", size = HuDimens.minTarget) {
+                            actions.pickSidebarApp(slot)
+                        }
+                    }
                 }
             }
         }
@@ -136,7 +140,7 @@ fun Sidebar(mode: Mode, moving: Boolean, speedKmh: Float?, actions: HeadUnitActi
             verticalArrangement = Arrangement.spacedBy(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            CircleButton(R.drawable.ic_house, "Dashboard", size = 88.dp) { actions.openScreen(Screen.DASHBOARD) }
+            CircleButton(R.drawable.ic_house, "Dashboard", size = 88.dp, onClick = actions.goHome)
             CircleButton(
                 R.drawable.ic_mic, "Voice assistant",
                 size = HuDimens.primaryButton,

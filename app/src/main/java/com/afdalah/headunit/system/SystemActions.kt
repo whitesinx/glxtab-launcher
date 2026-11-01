@@ -39,8 +39,14 @@ object SystemActions {
      * Opens Google Maps as a window inside [bounds] (screen px), so it sits exactly over the map card.
      * Launch bounds put the task in freeform mode on devices with freeform window management (One UI tablets).
      */
-    fun openMapsInBounds(context: Context, bounds: Rect): Boolean {
-        val intent = context.packageManager.getLaunchIntentForPackage(GOOGLE_MAPS) ?: return false
+    fun openMapsInBounds(context: Context, bounds: Rect): Boolean = openInBounds(context, GOOGLE_MAPS, bounds)
+
+    /**
+     * Opens [pkg] as a pop-up window inside [bounds] (screen px). Used for Maps in the map card and for
+     * video apps, which fill the area beside the sidebar the way karaoke does.
+     */
+    fun openInBounds(context: Context, pkg: String, bounds: Rect): Boolean {
+        val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return false
         // One UI pushes a pop-up window down by its drag-handle strip; ask for it that much higher so the window
         // lands exactly on the card (measured on the Tab S7: requested top 38 px -> placed at 65 px).
         val target = Rect(bounds).apply { offset(0, -POPUP_HANDLE_PX) }
@@ -51,7 +57,7 @@ object SystemActions {
         }
         return runCatching {
             context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), options.toBundle())
-        }.onFailure { Log.w("Cannot open Maps in the card", it) }.isSuccess
+        }.onFailure { Log.w("Cannot open $pkg in bounds $bounds", it) }.isSuccess
     }
 
     private const val WINDOWING_MODE_FREEFORM = 5

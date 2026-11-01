@@ -11,5 +11,5 @@
     <string name="shortcut_tablet">Exit to Tablet</string>
     <string name="notification_listener_label">Head Unit media &amp; notifications</string>
     <string name="service_channel">Head unit active</string>
-    <string name="lock_service_description">Locks the screen when the car\'s Bluetooth disconnects. Head Unit does not read anything on your screen.</string>
+    <string name="lock_service_description">Locks the screen when the car\'s Bluetooth disconnects. When the head unit turns off it opens Recents and taps Close all, so apps from the drive stop using battery. It reads nothing else on your screen.</string>
 </resources>

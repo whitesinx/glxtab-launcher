@@ -151,6 +151,18 @@ class ModeManager(
         scope.launch { store.setSavedStayOn(value) }
     }
 
+    /** Puts [pkg] into sidebar [slot]; if it was already in another slot, the two swap. */
+    fun setSidebarApp(slot: Int, pkg: String) {
+        val current = _settings.value.sidebarApps
+        if (slot !in current.indices) return
+        val next = current.toMutableList()
+        val existing = next.indexOf(pkg)
+        if (existing >= 0) next[existing] = next[slot]
+        next[slot] = pkg
+        _settings.update { it.copy(sidebarApps = next) }
+        scope.launch { store.setSidebarApps(next) }
+    }
+
     fun pushRecent(pkg: String) {
         _settings.update { s -> s.copy(recentPackages = (listOf(pkg) + s.recentPackages.filter { it != pkg }).take(6)) }
         scope.launch { store.pushRecent(pkg) }

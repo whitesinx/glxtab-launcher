@@ -119,6 +119,13 @@ data class ObdConfig(
     val adapterName: String = "OBDII",
 )
 
+/** Sidebar shortcuts until the user picks their own (long-press a sidebar icon while parked). */
+val DEFAULT_SIDEBAR_APPS = listOf(
+    "com.netflix.mediaclient",
+    "com.google.android.youtube",
+    "com.spotify.music",
+)
+
 val DEFAULT_DOCK = listOf(
     DockApp("Maps", "com.google.android.apps.maps"),
     DockApp("Spotify", "com.spotify.music"),
