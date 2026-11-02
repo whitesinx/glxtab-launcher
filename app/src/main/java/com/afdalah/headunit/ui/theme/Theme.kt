@@ -40,7 +40,7 @@ object HuTheme {
 /**
  * Resolves the palette for a mode profile: style × theme × palette (standard/night) × high contrast.
  * Profile theme "auto" follows the sidebar dark/light toggle; "dark"/"light" force it.
- * Night Drive keeps its dim warm palette in every style (glare matters more than looks); PS5 is always dark.
+ * Night Drive uses a dimmed version of each style (wallpaper and labels toned down); PS5 is always dark.
  */
 fun resolveColors(
     profile: ModeProfile,
@@ -59,7 +59,11 @@ fun resolveColors(
         else -> darkToggle
     }
     val base = when {
-        profile.palette == "night" -> CarPlayPalette.night(accent).copy(style = style)
+        profile.palette == "night" -> when (style) {
+            ThemeStyle.CARPLAY -> CarPlayPalette.night(accent)
+            ThemeStyle.GLASS -> CarPlayPalette.dimForNight(CarPlayPalette.glassDark(accent))
+            ThemeStyle.PS5 -> CarPlayPalette.dimForNight(CarPlayPalette.ps5(accent))
+        }
         style == ThemeStyle.PS5 -> CarPlayPalette.ps5(accent)
         style == ThemeStyle.GLASS -> if (dark) CarPlayPalette.glassDark(accent) else CarPlayPalette.glassLight(accent)
         dark -> CarPlayPalette.dark(accent)

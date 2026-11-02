@@ -23,7 +23,7 @@ import androidx.core.graphics.toColorInt
 data class HuColors(
     val isDark: Boolean,
     val style: ThemeStyle = ThemeStyle.CARPLAY,
-    /** Night Drive palette: the wallpaper stays plain black whatever the style. */
+    /** Night Drive palette: the wallpaper is drawn dimmer. */
     val night: Boolean = false,
     val background: Color,
     val backgroundTint: Color,
@@ -134,6 +134,15 @@ object CarPlayPalette {
         glassBorder = Color.White.copy(alpha = 0.85f),
         glassHighlight = Color.White.copy(alpha = 0.55f),
         fill = Color.White.copy(alpha = 0.55f),
+    )
+
+    /** Night Drive version of a styled palette: dimmer labels and glass; the wallpaper is drawn at lower intensity. */
+    fun dimForNight(base: HuColors) = base.copy(
+        night = true,
+        labelPrimary = Color(0xFFE4E4EA),
+        labelSecondary = base.labelSecondary.copy(alpha = base.labelSecondary.alpha * 0.85f),
+        glassHighlight = base.glassHighlight.copy(alpha = base.glassHighlight.alpha * 0.5f),
+        glassBorder = base.glassBorder.copy(alpha = base.glassBorder.alpha * 0.7f),
     )
 
     /** PS5 home screen: deep navy, cool-blue tinted cards, white type. Always dark. */

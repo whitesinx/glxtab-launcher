@@ -18,10 +18,11 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 fun HuBackground(modifier: Modifier = Modifier) {
     val c = HuTheme.colors
     Canvas(modifier.fillMaxSize().background(c.background)) {
-        when {
-            c.night || c.style == ThemeStyle.CARPLAY -> carPlay(c)
-            c.style == ThemeStyle.GLASS -> glass(c)
-            else -> ps5(c)
+        val k = if (c.night) 0.45f else 1f
+        when (c.style) {
+            ThemeStyle.CARPLAY -> carPlay(c)
+            ThemeStyle.GLASS -> glass(c, k)
+            ThemeStyle.PS5 -> ps5(c, k)
         }
     }
 }
@@ -31,8 +32,8 @@ private fun DrawScope.carPlay(c: HuColors) {
 }
 
 /** Soft, out-of-focus colour blobs: what Liquid Glass panels refract. */
-private fun DrawScope.glass(c: HuColors) {
-    val a = if (c.isDark) 1f else 0.7f
+private fun DrawScope.glass(c: HuColors, k: Float) {
+    val a = (if (c.isDark) 1f else 0.7f) * k
     blob(c.accent.copy(alpha = 0.55f * a), Offset(size.width * 0.18f, size.height * 0.15f), size.maxDimension * 0.55f)
     blob(Color(0xFFBF5AF2).copy(alpha = 0.45f * a), Offset(size.width * 0.85f, size.height * 0.25f), size.maxDimension * 0.5f)
     blob(Color(0xFF64D2FF).copy(alpha = 0.40f * a), Offset(size.width * 0.65f, size.height * 0.95f), size.maxDimension * 0.55f)
@@ -43,15 +44,15 @@ private fun DrawScope.glass(c: HuColors) {
 }
 
 /** Deep navy fade with a cool glow from the top right and faint light ribbons, like the PS5 home screen. */
-private fun DrawScope.ps5(c: HuColors) {
+private fun DrawScope.ps5(c: HuColors, k: Float) {
     drawRect(Brush.verticalGradient(listOf(Color(0xFF0A1A3F), Color(0xFF050C22), Color(0xFF02040C))))
-    blob(c.accent.copy(alpha = 0.38f), Offset(size.width * 0.92f, size.height * 0.02f), size.maxDimension * 0.6f)
-    blob(Color(0xFF2B5CC8).copy(alpha = 0.22f), Offset(size.width * 0.1f, size.height * 1.05f), size.maxDimension * 0.45f)
+    blob(c.accent.copy(alpha = 0.38f * k), Offset(size.width * 0.92f, size.height * 0.02f), size.maxDimension * 0.6f)
+    blob(Color(0xFF2B5CC8).copy(alpha = 0.22f * k), Offset(size.width * 0.1f, size.height * 1.05f), size.maxDimension * 0.45f)
     val ribbon = Color(0xFF8FB4FF)
     for (i in 0 until 3) {
         val y = size.height * (0.30f + i * 0.09f)
         drawLine(
-            Brush.horizontalGradient(listOf(Color.Transparent, ribbon.copy(alpha = 0.10f - i * 0.025f), Color.Transparent)),
+            Brush.horizontalGradient(listOf(Color.Transparent, ribbon.copy(alpha = (0.10f - i * 0.025f) * k), Color.Transparent)),
             start = Offset(0f, y + size.height * 0.25f),
             end = Offset(size.width, y - size.height * 0.15f),
             strokeWidth = size.height * (0.010f - i * 0.002f),

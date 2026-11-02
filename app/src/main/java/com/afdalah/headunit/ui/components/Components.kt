@@ -152,7 +152,7 @@ fun GlassPanel(
     val hc = HuTheme.highContrast
     val border = if (hc) 2.dp else 1.dp
     val material = when {
-        hc || c.night -> Modifier
+        hc -> Modifier
             .background(c.glassFill)
             .background(Brush.verticalGradient(listOf(c.glassHighlight, Color.Transparent)))
             .border(border, c.glassBorder, shape)
