@@ -22,6 +22,9 @@ import androidx.core.graphics.toColorInt
 @Immutable
 data class HuColors(
     val isDark: Boolean,
+    val style: ThemeStyle = ThemeStyle.CARPLAY,
+    /** Night Drive palette: the wallpaper stays plain black whatever the style. */
+    val night: Boolean = false,
     val background: Color,
     val backgroundTint: Color,
     val glassFill: Color,
@@ -81,6 +84,7 @@ object CarPlayPalette {
     /** Night Drive: dimmer, warmer labels, lower-luminance glass to cut cabin glare. */
     fun night(accent: Color) = HuColors(
         isDark = true,
+        night = true,
         background = Color(0xFF000000),
         backgroundTint = accent.copy(alpha = 0.05f),
         glassFill = Color(0xFFFFE8CC).copy(alpha = 0.05f),
@@ -107,6 +111,51 @@ object CarPlayPalette {
         separator = base.labelPrimary.copy(alpha = 0.5f),
     )
 
+    /**
+     * Apple "Liquid Glass": brighter, more transparent panels with a specular rim, over a
+     * vivid wallpaper (see [HuBackground]) so the translucency has something to show.
+     */
+    fun glassDark(accent: Color) = dark(accent).copy(
+        style = ThemeStyle.GLASS,
+        background = Color(0xFF05060F),
+        backgroundTint = accent.copy(alpha = 0.35f),
+        glassFill = Color.White.copy(alpha = 0.10f),
+        glassBorder = Color.White.copy(alpha = 0.22f),
+        glassHighlight = Color.White.copy(alpha = 0.16f),
+        fill = Color.White.copy(alpha = 0.16f),
+        labelSecondary = Color(0xFFEBEBF5).copy(alpha = 0.78f),
+    )
+
+    fun glassLight(accent: Color) = light(accent).copy(
+        style = ThemeStyle.GLASS,
+        background = Color(0xFFE9ECF5),
+        backgroundTint = accent.copy(alpha = 0.22f),
+        glassFill = Color.White.copy(alpha = 0.52f),
+        glassBorder = Color.White.copy(alpha = 0.85f),
+        glassHighlight = Color.White.copy(alpha = 0.55f),
+        fill = Color.White.copy(alpha = 0.55f),
+    )
+
+    /** PS5 home screen: deep navy, cool-blue tinted cards, white type. Always dark. */
+    fun ps5(accent: Color) = HuColors(
+        isDark = true,
+        style = ThemeStyle.PS5,
+        background = Color(0xFF02040C),
+        backgroundTint = accent.copy(alpha = 0.28f),
+        glassFill = Color(0xFF16233F).copy(alpha = 0.62f),
+        glassBorder = Color(0xFF9FB8E6).copy(alpha = 0.14f),
+        glassHighlight = Color(0xFF6E8FD0).copy(alpha = 0.10f),
+        fill = Color(0xFF2A3B60).copy(alpha = 0.70f),
+        labelPrimary = Color(0xFFFFFFFF),
+        labelSecondary = Color(0xFFC6D2EA),
+        separator = Color(0xFF9FB8E6).copy(alpha = 0.18f),
+        accent = accent,
+        onAccent = onColorFor(accent),
+        red = Color(0xFFFF4F5E),
+        green = Color(0xFF35D07F),
+        orange = Color(0xFFFFA733),
+    )
+
     fun parse(hex: String?, fallback: Color): Color =
         runCatching { Color(hex!!.toColorInt()) }.getOrDefault(fallback)
 
@@ -126,4 +175,8 @@ object CarPlayPalette {
         "#BF5AF2" to "Purple",
         "#64D2FF" to "Teal",
     )
+
+    /** PlayStation blue, used as the PS5 accent unless one was picked in Settings. */
+    const val PS5_BLUE = "#0070D1"
+
 }

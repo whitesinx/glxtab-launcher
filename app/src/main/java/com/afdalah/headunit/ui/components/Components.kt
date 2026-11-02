@@ -62,6 +62,7 @@ import com.afdalah.headunit.ui.theme.HuDimens
 import com.afdalah.headunit.ui.theme.HuMotion
 import com.afdalah.headunit.ui.theme.HuShapes
 import com.afdalah.headunit.ui.theme.HuTheme
+import com.afdalah.headunit.ui.theme.ThemeStyle
 
 /**
  * Every tap: haptic tick (eyes are on the road) + a short spring press-scale.
@@ -140,7 +141,7 @@ fun HuIcon(
     )
 }
 
-/** CarPlay card material: translucent fill, hairline border, faint top highlight. */
+/** Card material per theme style: translucent fill, edge, highlight. */
 @Composable
 fun GlassPanel(
     modifier: Modifier = Modifier,
@@ -148,15 +149,33 @@ fun GlassPanel(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val c = HuTheme.colors
-    val border = if (HuTheme.highContrast) 2.dp else 1.dp
-    Box(
-        modifier
-            .clip(shape)
+    val hc = HuTheme.highContrast
+    val border = if (hc) 2.dp else 1.dp
+    val material = when {
+        hc || c.night -> Modifier
             .background(c.glassFill)
             .background(Brush.verticalGradient(listOf(c.glassHighlight, Color.Transparent)))
-            .border(border, c.glassBorder, shape),
-        content = content,
-    )
+            .border(border, c.glassBorder, shape)
+        // Liquid Glass: sheen across the top-left, specular rim bright at the top and fading down.
+        c.style == ThemeStyle.GLASS -> Modifier
+            .background(c.glassFill)
+            .background(Brush.linearGradient(listOf(c.glassHighlight, Color.Transparent, c.glassHighlight.copy(alpha = c.glassHighlight.alpha * 0.4f))))
+            .border(
+                1.5.dp,
+                Brush.verticalGradient(listOf(c.glassBorder.copy(alpha = minOf(1f, c.glassBorder.alpha * 2.4f)), c.glassBorder.copy(alpha = c.glassBorder.alpha * 0.35f), c.glassBorder)),
+                shape,
+            )
+        // PS5: cool tinted card, lighter at the top, hairline edge.
+        c.style == ThemeStyle.PS5 -> Modifier
+            .background(Brush.verticalGradient(listOf(c.glassFill.copy(alpha = minOf(1f, c.glassFill.alpha + 0.12f)), c.glassFill)))
+            .background(Brush.verticalGradient(listOf(c.glassHighlight, Color.Transparent)))
+            .border(border, c.glassBorder, shape)
+        else -> Modifier
+            .background(c.glassFill)
+            .background(Brush.verticalGradient(listOf(c.glassHighlight, Color.Transparent)))
+            .border(border, c.glassBorder, shape)
+    }
+    Box(modifier.clip(shape).then(material), content = content)
 }
 
 /** Large rounded tile: icon over label. Used for nav shortcuts, quick actions, menus. */

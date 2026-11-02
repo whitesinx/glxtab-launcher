@@ -66,6 +66,7 @@ import com.afdalah.headunit.ui.theme.CarPlayPalette
 import com.afdalah.headunit.ui.theme.HuDimens
 import com.afdalah.headunit.ui.theme.HuShapes
 import com.afdalah.headunit.ui.theme.HuTheme
+import com.afdalah.headunit.ui.theme.ThemeStyle
 
 /** Parked-only settings. Text input lives only here, and only while parked. */
 @Composable
@@ -126,6 +127,24 @@ private fun SettingsList(actions: HeadUnitActions) {
         }
         item {
             Section("Display") {
+                Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+                    HuText("Theme", HuTheme.type.headline)
+                    Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(HuDimens.targetSpacing)) {
+                        val current = ThemeStyle.fromId(settings.themeStyle)
+                        ThemeStyle.entries.forEach { style ->
+                            TileButton(
+                                R.drawable.ic_layout_grid, style.label,
+                                sublabel = when (style) {
+                                    ThemeStyle.CARPLAY -> "Classic"
+                                    ThemeStyle.GLASS -> "Liquid glass"
+                                    ThemeStyle.PS5 -> "Always dark"
+                                },
+                                accent = style == current,
+                                modifier = Modifier.weight(1f).semantics { selected = style == current },
+                            ) { mm.setThemeStyle(style.id) }
+                        }
+                    }
+                }
                 HuSwitchRow("High contrast", "Opaque panels and bolder text for sun glare", settings.highContrast) { mm.setHighContrast(it) }
                 val canWrite = app.stayOn.canWrite()
                 HuSwitchRow(
@@ -140,7 +159,7 @@ private fun SettingsList(actions: HeadUnitActions) {
                 Column(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                     HuText("Accent color", HuTheme.type.headline)
                     Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(HuDimens.targetSpacing)) {
-                        val current = settings.accentOverride ?: config.accentColor
+                        val current = settings.accentOverride ?: if (settings.themeStyle == ThemeStyle.PS5.id) CarPlayPalette.PS5_BLUE else config.accentColor
                         CarPlayPalette.AccentChoices.forEach { (hex, name) ->
                             val color = CarPlayPalette.parse(hex, HuTheme.colors.accent)
                             val isSel = current.equals(hex, ignoreCase = true)

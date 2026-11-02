@@ -1,7 +1,9 @@
 package com.afdalah.headunit.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -76,15 +78,52 @@ class ContinuousRoundedShape(
     }
 }
 
-/** Shape tokens. CarPlay uses large, consistent continuous corners. */
+/** Corner set for a [ThemeStyle]. */
+@Immutable
+data class HuShapeSet(
+    val card: Shape,
+    val panel: Shape,
+    val button: Shape,
+    val banner: Shape,
+    val artwork: Shape,
+) {
+    companion object {
+        /** CarPlay: large, consistent continuous corners. */
+        val CarPlay = HuShapeSet(
+            card = ContinuousRoundedShape(32.dp), panel = ContinuousRoundedShape(28.dp),
+            button = ContinuousRoundedShape(22.dp), banner = ContinuousRoundedShape(28.dp),
+            artwork = ContinuousRoundedShape(18.dp),
+        )
+        /** Liquid Glass: rounder, softer. */
+        val Glass = HuShapeSet(
+            card = ContinuousRoundedShape(40.dp), panel = ContinuousRoundedShape(34.dp),
+            button = ContinuousRoundedShape(28.dp), banner = ContinuousRoundedShape(36.dp),
+            artwork = ContinuousRoundedShape(22.dp),
+        )
+        /** PS5: tighter, crisper corners. */
+        val Ps5 = HuShapeSet(
+            card = RoundedCornerShape(16.dp), panel = RoundedCornerShape(14.dp),
+            button = RoundedCornerShape(12.dp), banner = RoundedCornerShape(16.dp),
+            artwork = RoundedCornerShape(10.dp),
+        )
+
+        fun of(style: ThemeStyle) = when (style) {
+            ThemeStyle.CARPLAY -> CarPlay
+            ThemeStyle.GLASS -> Glass
+            ThemeStyle.PS5 -> Ps5
+        }
+    }
+}
+
+/** Shape tokens; card/panel/button/banner/artwork follow the current [ThemeStyle]. */
 object HuShapes {
-    val card: Shape = ContinuousRoundedShape(32.dp)
-    val panel: Shape = ContinuousRoundedShape(28.dp)
-    val button: Shape = ContinuousRoundedShape(22.dp)
-    val banner: Shape = ContinuousRoundedShape(28.dp)
+    val card: Shape @Composable @ReadOnlyComposable get() = LocalHuShapes.current.card
+    val panel: Shape @Composable @ReadOnlyComposable get() = LocalHuShapes.current.panel
+    val button: Shape @Composable @ReadOnlyComposable get() = LocalHuShapes.current.button
+    val banner: Shape @Composable @ReadOnlyComposable get() = LocalHuShapes.current.banner
+    val artwork: Shape @Composable @ReadOnlyComposable get() = LocalHuShapes.current.artwork
     /** iOS app-icon mask: radius = 22.37% of the icon size. */
     val appIcon: Shape = ContinuousRoundedShape(fraction = 0.2237f)
-    val artwork: Shape = ContinuousRoundedShape(18.dp)
     val pill: Shape = RoundedCornerShape(percent = 50)
 }
 

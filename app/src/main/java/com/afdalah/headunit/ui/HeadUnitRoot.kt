@@ -55,6 +55,8 @@ import com.afdalah.headunit.ui.settings.SettingsScreen
 import com.afdalah.headunit.ui.sidebar.Sidebar
 import com.afdalah.headunit.ui.theme.HuMotion
 import com.afdalah.headunit.ui.theme.HuTheme
+import com.afdalah.headunit.ui.theme.HuBackground
+import com.afdalah.headunit.ui.theme.ThemeStyle
 import com.afdalah.headunit.ui.theme.resolveColors
 
 enum class Screen { DASHBOARD, LIBRARY, SETTINGS, KARAOKE }
@@ -89,7 +91,7 @@ fun HeadUnitRoot(
 
     val mode = modeState.mode
     val profile = app.configRepository.profileFor(mode)
-    val colors = resolveColors(profile, config.accentColor, settings.accentOverride, settings.darkTheme, settings.highContrast)
+    val colors = resolveColors(profile, config.accentColor, settings.accentOverride, settings.darkTheme, settings.highContrast, ThemeStyle.fromId(settings.themeStyle))
     val moving = driving.isMoving
 
     var screen by rememberSaveable { mutableStateOf(Screen.DASHBOARD) }
@@ -161,12 +163,8 @@ fun HeadUnitRoot(
 
     HuTheme(colors = colors, isMoving = moving, highContrast = settings.highContrast) {
         val c = HuTheme.colors
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(c.background)
-                .background(Brush.radialGradient(listOf(c.backgroundTint, c.background.copy(alpha = 0f)))),
-        ) {
+        Box(Modifier.fillMaxSize()) {
+            HuBackground()
             when {
                 mode == Mode.TABLET && showDisabledPrompt -> HeadUnitDisabledScreen(
                     onEnable = {

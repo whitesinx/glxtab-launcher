@@ -138,3 +138,12 @@ class SimulateCarReceiver : BroadcastReceiver() {
         if (connected) context.app.carSession.onCarConnected() else context.app.carSession.onCarDisconnected()
     }
 }
+
+/** adb shell am broadcast -a com.afdalah.headunit.debug.SET_THEME -p com.afdalah.headunit --es style glass|ps5|carplay */
+class SetThemeReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val style = intent.getStringExtra("style") ?: return
+        context.app.modeManager.setThemeStyle(style)
+        Log.i("Theme style: $style")
+    }
+}

@@ -27,6 +27,8 @@ data class UserSettings(
     val accentOverride: String? = null,
     /** Sidebar sun/moon toggle. Dark by default; Night Drive and Standby are always dark. */
     val darkTheme: Boolean = true,
+    /** Overall look: "carplay", "glass" or "ps5" (ui.theme.ThemeStyle ids). */
+    val themeStyle: String = "carplay",
     val recentPackages: List<String> = emptyList(),
     /** Sidebar shortcut slots, in order. */
     val sidebarApps: List<String> = DEFAULT_SIDEBAR_APPS,
@@ -56,6 +58,7 @@ class SettingsStore(private val context: Context) {
         val manageStayOn = booleanPreferencesKey("manage_stay_on")
         val accent = stringPreferencesKey("accent_override")
         val darkTheme = booleanPreferencesKey("dark_theme")
+        val themeStyle = stringPreferencesKey("theme_style")
         val recents = stringPreferencesKey("recent_packages")
         val sidebarApps = stringPreferencesKey("sidebar_apps")
     }
@@ -92,6 +95,7 @@ class SettingsStore(private val context: Context) {
     suspend fun setHighContrast(v: Boolean) = edit { it[K.highContrast] = v }
     suspend fun setManageStayOn(v: Boolean) = edit { it[K.manageStayOn] = v }
     suspend fun setDarkTheme(v: Boolean) = edit { it[K.darkTheme] = v }
+    suspend fun setThemeStyle(id: String) = edit { it[K.themeStyle] = id }
     suspend fun setAccentOverride(hex: String?) = edit { if (hex == null) it.remove(K.accent) else it[K.accent] = hex }
 
     suspend fun pushRecent(pkg: String) = edit {
@@ -111,6 +115,7 @@ class SettingsStore(private val context: Context) {
         manageStayOn = this[K.manageStayOn] ?: false,
         accentOverride = this[K.accent],
         darkTheme = this[K.darkTheme] ?: true,
+        themeStyle = this[K.themeStyle] ?: "carplay",
         recentPackages = this[K.recents]?.split(',')?.filter(String::isNotBlank) ?: emptyList(),
         sidebarApps = this[K.sidebarApps]?.split(',')?.takeIf { it.size == DEFAULT_SIDEBAR_APPS.size } ?: DEFAULT_SIDEBAR_APPS,
     )

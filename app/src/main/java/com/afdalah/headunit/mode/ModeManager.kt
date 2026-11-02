@@ -141,6 +141,11 @@ class ModeManager(
         scope.launch { store.setDarkTheme(dark) }
     }
 
+    fun setThemeStyle(id: String) {
+        _settings.update { it.copy(themeStyle = id) }
+        scope.launch { store.setThemeStyle(id) }
+    }
+
     fun setAccentOverride(hex: String?) {
         _settings.update { it.copy(accentOverride = hex) }
         scope.launch { store.setAccentOverride(hex) }

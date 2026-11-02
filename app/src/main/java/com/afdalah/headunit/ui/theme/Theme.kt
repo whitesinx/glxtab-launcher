@@ -15,6 +15,18 @@ private val LocalHuType = staticCompositionLocalOf { huTypography() }
 private val LocalReduceMotion = staticCompositionLocalOf { false }
 private val LocalDecorativeMotion = staticCompositionLocalOf { true }
 private val LocalHighContrast = staticCompositionLocalOf { false }
+internal val LocalHuShapes = staticCompositionLocalOf { HuShapeSet.CarPlay }
+
+/** Overall look, picked in Settings → Display → Theme. */
+enum class ThemeStyle(val id: String, val label: String) {
+    CARPLAY("carplay", "CarPlay"),
+    GLASS("glass", "Apple Glass"),
+    PS5("ps5", "PS5");
+
+    companion object {
+        fun fromId(id: String?) = entries.firstOrNull { it.id == id } ?: CARPLAY
+    }
+}
 
 object HuTheme {
     val colors: HuColors @Composable @ReadOnlyComposable get() = LocalHuColors.current
@@ -26,19 +38,30 @@ object HuTheme {
 }
 
 /**
- * Resolves the palette for a mode profile: theme × palette (standard/night) × high contrast.
+ * Resolves the palette for a mode profile: style × theme × palette (standard/night) × high contrast.
  * Profile theme "auto" follows the sidebar dark/light toggle; "dark"/"light" force it.
+ * Night Drive keeps its dim warm palette in every style (glare matters more than looks); PS5 is always dark.
  */
-fun resolveColors(profile: ModeProfile, globalAccent: String, accentOverride: String?, darkToggle: Boolean, highContrast: Boolean): HuColors {
+fun resolveColors(
+    profile: ModeProfile,
+    globalAccent: String,
+    accentOverride: String?,
+    darkToggle: Boolean,
+    highContrast: Boolean,
+    style: ThemeStyle = ThemeStyle.CARPLAY,
+): HuColors {
     val fallback = Color(0xFF0A84FF)
-    val accent = CarPlayPalette.parse(profile.accentColor ?: accentOverride ?: globalAccent, fallback)
+    val styleAccent = if (style == ThemeStyle.PS5) CarPlayPalette.PS5_BLUE else globalAccent
+    val accent = CarPlayPalette.parse(profile.accentColor ?: accentOverride ?: styleAccent, fallback)
     val dark = when (profile.theme) {
         "light" -> false
         "dark" -> true
         else -> darkToggle
     }
     val base = when {
-        profile.palette == "night" -> CarPlayPalette.night(accent)
+        profile.palette == "night" -> CarPlayPalette.night(accent).copy(style = style)
+        style == ThemeStyle.PS5 -> CarPlayPalette.ps5(accent)
+        style == ThemeStyle.GLASS -> if (dark) CarPlayPalette.glassDark(accent) else CarPlayPalette.glassLight(accent)
         dark -> CarPlayPalette.dark(accent)
         else -> CarPlayPalette.light(accent)
     }
@@ -65,6 +88,7 @@ fun HuTheme(
         LocalReduceMotion provides reduceMotion,
         LocalDecorativeMotion provides !isMoving,
         LocalHighContrast provides highContrast,
+        LocalHuShapes provides HuShapeSet.of(colors.style),
         content = content,
     )
 }

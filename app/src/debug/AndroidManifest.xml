@@ -14,5 +14,11 @@
                 <action android:name="com.afdalah.headunit.debug.SIMULATE_CAR" />
             </intent-filter>
         </receiver>
+        <!-- Switch theme: am broadcast with action SET_THEME and string extra "style" (carplay, glass, ps5) -->
+        <receiver android:name=".debug.SetThemeReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.afdalah.headunit.debug.SET_THEME" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
